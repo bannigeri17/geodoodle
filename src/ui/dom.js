@@ -15,7 +15,7 @@ const el = {
   share: $('share'), toast: $('toast')
 };
 const modeBtns = document.querySelectorAll('.seg button');
-const modeLabel = m => m === 'us' ? 'state' : 'country';
+const modeLabel = (m, plural = false) => m === 'us' ? (plural ? 'states' : 'state') : (plural ? 'countries' : 'country');
 
 function verdictFor(s) {
   return s >= 90 ? 'Cartographer level.' : s >= 75 ? 'Very close.' : s >= 55 ? 'Clearly recognizable.' : s >= 30 ? 'Getting there.' : 'A rough start. Try a hint next time.';
@@ -54,7 +54,7 @@ function renderSummary() {
     el.summaryRows.appendChild(row);
   });
   const hintsTotal = state.roundResults.reduce((s, r) => s + (r.hints || 0), 0);
-  el.summaryNote.textContent = 'Come back tomorrow for ' + state.dailySet.length + ' new ' + modeLabel(state.mode) + (state.dailySet.length === 1 ? '' : 's') + '.' + (hintsTotal ? ' Hints used: ' + hintsTotal + '.' : '');
+  el.summaryNote.textContent = 'Come back tomorrow for ' + state.dailySet.length + ' new ' + modeLabel(state.mode, state.dailySet.length !== 1) + '.' + (hintsTotal ? ' Hints used: ' + hintsTotal + '.' : '');
 }
 export function ui() {
   modeBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode)));
