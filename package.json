@@ -1,0 +1,11 @@
+{
+  "name": "rough-borders",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "A daily map-outline drawing game.",
+  "scripts": {
+    "dev": "npx --yes serve -l 5173 .",
+    "start": "npx --yes serve -l 5173 ."
+  }
+}

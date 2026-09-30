@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rough Borders</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <h1 class="brand">Rough Borders</h1>
+    <span class="date" id="date"></span>
+  </header>
+
+  <div class="seg" role="group" aria-label="Game mode">
+    <button type="button" data-mode="world" aria-pressed="true">World</button>
+    <button type="button" data-mode="us" aria-pressed="false">US states</button>
+  </div>
+
+  <div class="progress" id="progress" hidden></div>
+
+  <section class="prompt" aria-live="polite" id="promptBox">
+    <p class="ask" id="ask">Draw the outline of</p>
+    <h2 class="name"><span id="name"></span><span class="practice-tag" id="practiceTag" hidden>Practice</span></h2>
+  </section>
+
+  <div id="playArea">
+    <div class="pad-wrap">
+      <canvas id="pad" role="img" aria-label="Drawing area. Draw the outline with a finger, stylus, mouse or trackpad."></canvas>
+      <div class="placeholder" id="placeholder">Draw it here with your finger, stylus, mouse or trackpad. Use as many strokes as you like: strokes that end close together join into one outline.</div>
+    </div>
+
+    <div class="row" id="tools">
+      <button type="button" class="btn" id="undo">Undo</button>
+      <button type="button" class="btn" id="clear">Clear</button>
+      <button type="button" class="btn toggle" id="guide" aria-pressed="true">Guide box: on</button>
+      <button type="button" class="btn primary" id="done">Score my drawing</button>
+    </div>
+
+    <div class="hints" id="hintsBox">
+      <button type="button" class="btn" id="hintBtn">Get a hint</button>
+      <ul id="hintList"></ul>
+    </div>
+
+    <section class="results" id="results" hidden>
+      <div class="scoreline"><span class="big" id="scoreNum">0</span><span class="of">/ 100</span></div>
+      <p class="verdict" id="verdict"></p>
+      <div class="metric"><span>Overlap</span><span class="track"><i class="fill" id="mIou"></i></span><b id="mIouV"></b></div>
+      <div class="metric"><span>Contour</span><span class="track"><i class="fill" id="mCh"></i></span><b id="mChV"></b></div>
+      <p class="note" id="hintNote"></p>
+      <p class="note" id="rotNote"></p>
+      <div class="legend">
+        <span><i style="background:var(--true)"></i>Actual outline</span>
+        <span><i style="background:var(--mine)"></i>Your drawing</span>
+      </div>
+      <div class="row">
+        <button type="button" class="btn" id="rotToggle" hidden>Show straightened</button>
+        <button type="button" class="btn primary" id="advance">Practice another shape</button>
+      </div>
+    </section>
+  </div>
+
+  <section class="summary" id="summary" hidden>
+    <p class="ask" id="summaryLabel">Today's result</p>
+    <div class="summary-total" id="summaryTotal">0<span class="of" style="font-size:1.3rem"> / 500</span></div>
+    <div id="summaryRows"></div>
+    <p class="note" id="summaryNote"></p>
+    <div class="row">
+      <button type="button" class="btn primary" id="share" style="margin-left:0">Share result</button>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <span id="stats"></span>
+    <button type="button" class="btn" id="practiceStart">Practice with a random shape</button>
+  </footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>
