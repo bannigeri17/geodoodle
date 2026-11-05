@@ -1,7 +1,7 @@
 # Rough Borders
 
 A daily map-outline drawing game. Each day serves 5 shapes (countries, or US
-states in the other mode) and scores how closely you draw each outline.
+states in the other mode) and scores how closely you draw each outline. I threw it together as a game to play with my friends and family.
 
 ## Project structure
 
