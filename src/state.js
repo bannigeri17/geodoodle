@@ -9,7 +9,7 @@ import { redraw } from "./ui/canvas.js";
 // A "daily" is ROUND_COUNT shapes played in sequence per mode; practice is a single
 // free-standing shape that never counts toward the daily result or its storage.
 export const state = {
-  guide: !(store.prefs && store.prefs.guide === false),
+  hard: !!(store.prefs && store.prefs.hard),   // hard mode: no guide box
   mode: "world",
   practice: false,
   practiceShape: null,

@@ -135,7 +135,7 @@ export function redraw() {
     drawRingsPath(rings, sc); ctx.globalAlpha = .12; ctx.fill(); ctx.globalAlpha = 1; ctx.stroke();
     return;
   }
-  if (state.guide || state.hints >= 1) {
+  if (!state.hard) {
     const a = state.target.aspect;
     let fw = W * .8, fh = fw / a;
     if (fh > H * .8) { fh = H * .8; fw = fh * a; }

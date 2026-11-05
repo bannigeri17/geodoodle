@@ -2,7 +2,7 @@ import { STORE_KEY, ROUND_COUNT } from '../constants.js';
 import { dateKey } from './dom-helpers.js';
 
 // store.daily[dateKey:mode] = { results: [{score, hints}, ...] }
-// store.prefs = { guide: boolean }
+// store.prefs = { hard: boolean }
 export let store = { daily: {}, prefs: {} };
 try {
   const raw = JSON.parse(localStorage.getItem(STORE_KEY));

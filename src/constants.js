@@ -8,9 +8,15 @@ export const HINT_COST = 3; // points deducted per hint used
 export const HINT_COST_ARRAY = [3, 7, 10]; // points deducted per hint used
 export const HINT_CUMULATIVE_COST_ARRAY = [3, 10, 20]; // cumulative points per hint used
 export const MAX_HINTS = 3;
+export const MAX_HINTS_HARD = 2; // hint 3 reveals the guide box, so hard mode doesn't get it
 export const JOIN = 0.07; // stroke-endpoint join distance, as a fraction of canvas width
 export const ROT_FREE = 15; // degrees of tilt forgiven at no cost
 export const ROT_PENALTY_PER_DEG = 0.5; // points lost per degree beyond ROT_FREE
 
 // Storage
 export const STORE_KEY = "roughborders:v2";
+
+// Sharing + saved drawings
+export const SHARE_URL = 'https://rough-borders.app';
+export const MAX_STORED_POINTS = 100; // per ring, when saving drawings to localStorage
+export const KEEP_DRAWINGS_DAYS = 30; // older days keep their scores but drop the saved outlines

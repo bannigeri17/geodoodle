@@ -2,10 +2,15 @@ import { $, dateKey } from "../lib/dom-helpers.js";
 import {
   HINT_COST,
   HINT_CUMULATIVE_COST_ARRAY,
-  MAX_HINTS,
-  ROT_FREE,
   HINT_COST_ARRAY,
+  MAX_HINTS,
+  MAX_HINTS_HARD,
+  ROT_FREE,
+  SHARE_URL,
+  MAX_STORED_POINTS,
+  KEEP_DRAWINGS_DAYS,
 } from "../constants.js";
+import { prepTarget } from "../lib/geometry.js";
 import { store, saveStore, computeStats } from "../lib/storage.js";
 import { scoreDrawing } from "../lib/scoring.js";
 import {
@@ -31,7 +36,7 @@ const el = {
   undo: $("undo"),
   clear: $("clear"),
   done: $("done"),
-  guide: $("guide"),
+  hard: $("hardMode"),
   hintBtn: $("hintBtn"),
   hintList: $("hintList"),
   placeholder: $("placeholder"),
@@ -99,28 +104,89 @@ function renderProgress() {
     : state.round + 1 + " of " + state.dailySet.length;
   el.progress.appendChild(lbl);
 }
+
+const maxHints = () => (state.hard ? MAX_HINTS_HARD : MAX_HINTS);
+const hardCount = () => state.roundResults.filter((r) => r.hard).length;
+// '' (none) | 'Hard mode' (every round) | 'Hard mode 3/5' (some rounds); used by the summary label and share text
+const hardTag = () => {
+  const h = hardCount(),
+    n = state.roundResults.length;
+  return h === 0 ? "" : h === n ? "Hard mode" : "Hard mode " + h + "/" + n;
+};
+
+const ringsPath = (rings) =>
+  rings
+    .map(
+      (r) =>
+        "M" +
+        r.map(([x, y]) => (+x).toFixed(1) + " " + (+y).toFixed(1)).join("L") +
+        "Z",
+    )
+    .join("");
+// Both outlines live in the same 128x128 scoring grid, so one viewBox lines them up.
+function outlineSvg(targetRings, userRings) {
+  return (
+    '<svg viewBox="0 0 128 128" aria-hidden="true"><path class="o-true" d="' +
+    ringsPath(targetRings) +
+    '"/>' +
+    (userRings
+      ? '<path class="o-mine" d="' + ringsPath(userRings) + '"/>'
+      : "") +
+    "</svg>"
+  );
+}
+// Keep saved drawings small (localStorage is ~5 MB): thin each ring and round to 0.1 grid units.
+function compactRings(rings) {
+  return rings.map((ring) => {
+    const step = Math.max(1, Math.ceil(ring.length / MAX_STORED_POINTS)),
+      out = [];
+    for (let i = 0; i < ring.length; i += step)
+      out.push([
+        Math.round(ring[i][0] * 10) / 10,
+        Math.round(ring[i][1] * 10) / 10,
+      ]);
+    return out;
+  });
+}
+// Older days keep their scores (streaks and averages need them) but drop the saved outlines.
+function pruneOldDrawings() {
+  const cutoff = dateKey(new Date(Date.now() - KEEP_DRAWINGS_DAYS * 864e5));
+  for (const k in store.daily) {
+    if (k.split(":")[0] < cutoff)
+      (store.daily[k].results || []).forEach((r) => {
+        delete r.rings;
+      });
+  }
+}
+
 function renderSummary() {
+  const tag = hardTag();
   el.summaryLabel.textContent =
-    "Today's " + (state.mode === "us" ? "US states" : "World") + " result";
+    "Today's " +
+    (state.mode === "us" ? "US states" : "World") +
+    " result" +
+    (tag ? " \u00B7 " + tag : "");
   const total = state.roundResults.reduce((s, r) => s + r.score, 0),
     max = state.roundResults.length * 100;
   el.summaryTotal.innerHTML =
     total + '<span class="of" style="font-size:1.3rem"> / ' + max + "</span>";
   el.summaryRows.innerHTML = "";
   state.roundResults.forEach((r, i) => {
-    const row = document.createElement("div");
-    row.className = "summary-row";
-    row.innerHTML =
-      "<span>" +
-      state.dailySet[i].name +
-      "</span>" +
-      '<span class="track"><i class="fill" style="width:' +
-      r.score +
-      '%"></i></span>' +
-      "<b>" +
-      r.score +
-      "</b>";
-    el.summaryRows.appendChild(row);
+    const shape = state.dailySet[i];
+    const card = document.createElement("div");
+    card.className = "summary-card";
+    const fig = document.createElement("div");
+    fig.className = "summary-fig";
+    fig.innerHTML = outlineSvg(prepTarget(shape).rings, r.rings); // r.rings is missing on days saved before this feature
+    const cap = document.createElement("div");
+    cap.className = "summary-cap";
+    const nm = document.createElement("span");
+    nm.textContent = shape.name;
+    const sc = document.createElement("b");
+    sc.textContent = r.score;
+    cap.append(nm, sc);
+    card.append(fig, cap);
+    el.summaryRows.appendChild(card);
   });
   const hintsTotal = state.roundResults.reduce((s, r) => s + (r.hints || 0), 0);
   el.summaryNote.textContent =
@@ -169,18 +235,19 @@ export function ui() {
   el.tag.hidden = !state.practice;
 
   el.tools.hidden = done;
-  el.guide.setAttribute("aria-pressed", String(state.guide));
-  el.guide.textContent = "Guide box: " + (state.guide ? "on" : "off");
+  el.hard.setAttribute("aria-pressed", String(state.hard));
+  el.hard.textContent = "Hard mode: " + (state.hard ? "on" : "off");
+  el.hard.disabled = state.strokes.length > 0 || state.hints > 0; // pick it before the round starts
   const empty = !state.strokes.length;
   el.undo.disabled = el.clear.disabled = el.done.disabled = empty;
   el.placeholder.hidden = !empty || done;
 
-  el.hintBtn.hidden = done || state.hints >= MAX_HINTS;
+  el.hintBtn.hidden = done || state.hints >= maxHints();
   el.hintBtn.textContent =
     "Get hint " +
     (state.hints + 1) +
     " of " +
-    MAX_HINTS +
+    maxHints() +
     " (\u2212" +
     HINT_COST_ARRAY[state.hints] +
     " points)";
@@ -264,16 +331,23 @@ function submit() {
   }
   r.score = Math.max(
     0,
-    r.base - (state.hints > 0 ? HINT_CUMULATIVE_COST_ARRAY[state.hints - 1] : 0),
+    r.base -
+      (state.hints > 0 ? HINT_CUMULATIVE_COST_ARRAY[state.hints - 1] : 0),
   );
   state.result = r;
   state.viewRot = false;
   if (!state.practice) {
     state.roundResults = state.roundResults.slice(0, state.round);
-    state.roundResults.push({ score: r.score, hints: state.hints });
+    state.roundResults.push({
+      score: r.score,
+      hints: state.hints,
+      hard: state.hard,
+      rings: compactRings(r.userRings),
+    });
     store.daily[key()] = { results: state.roundResults };
     if (state.round === state.dailySet.length - 1) clearSession();
     else saveSession();
+    pruneOldDrawings();
     saveStore();
   }
   ui();
@@ -297,18 +371,23 @@ function shareText() {
     const total = state.roundResults.reduce((s, r) => s + r.score, 0),
       max = state.roundResults.length * 100;
     const hints = state.roundResults.reduce((s, r) => s + (r.hints || 0), 0);
+    const tag = hardTag();
     return (
       "Rough Borders " +
       dateKey() +
       " (" +
       (state.mode === "us" ? "US states" : "World") +
-      ")\n" +
+      ")" +
+      (tag ? " \uD83D\uDD25 " + tag : "") +
+      "\n" +
       state.roundResults.map((r) => bar(r.score)).join("") +
       "  " +
       total +
       "/" +
       max +
-      (hints ? "  " + "\uD83D\uDCA1".repeat(hints) : "")
+      (hints ? "  " + "\uD83D\uDCA1".repeat(hints) : "") +
+      "\n" +
+      SHARE_URL
     ).trim();
   }
   const r = state.result;
@@ -317,7 +396,7 @@ function shareText() {
     state.shape.name +
     " \u2014 " +
     r.score +
-    "/100"
+    "/100\n" + SHARE_URL
   ).trim();
 }
 async function share() {
@@ -360,16 +439,17 @@ export function wireEvents() {
     redraw();
   });
   $("done").addEventListener("click", submit);
-  $("guide").addEventListener("click", () => {
-    state.guide = !state.guide;
+  $("hardMode").addEventListener("click", () => {
+    if (state.strokes.length || state.hints) return; // locked once the round has started
+    state.hard = !state.hard;
     store.prefs = store.prefs || {};
-    store.prefs.guide = state.guide;
+    store.prefs.hard = state.hard;
     saveStore();
     ui();
     redraw();
   });
   $("hintBtn").addEventListener("click", () => {
-    if (state.hints < MAX_HINTS && !state.result) {
+    if (state.hints < maxHints() && !state.result) {
       state.hints++;
       ui();
       redraw();
