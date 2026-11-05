@@ -107,9 +107,14 @@
 
   .summary { margin-top: 18px; }
   .summary-total { font: 800 3.4rem/1 'Bricolage Grotesque', system-ui, sans-serif; letter-spacing: -0.03em; margin: 0 0 4px; }
-  .summary-row { display: grid; grid-template-columns: 96px 1fr 40px; align-items: center; gap: 10px; margin: 10px 0; font-size: .95rem; }
-  .summary-row .track { height: 9px; }
-  .summary-row b { text-align: right; font-variant-numeric: tabular-nums; }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 14px; }
+  .summary-card { background: var(--panel); border: 1.5px solid var(--line); border-radius: 12px; padding: 8px; }
+  .summary-fig svg { display: block; width: 100%; aspect-ratio: 1 / 1; }
+  .summary-cap { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-top: 6px; font-size: .95rem; }
+  .summary-cap b { font-variant-numeric: tabular-nums; }
+  .o-true { fill: var(--true); fill-opacity: .22; stroke: var(--true); stroke-width: 1.6; stroke-linejoin: round; }
+  .o-mine { fill: var(--mine); fill-opacity: .12; stroke: var(--mine); stroke-width: 2; stroke-linejoin: round; }
+  .row .note { flex-basis: 100%; margin: 0; }
 
   .foot { margin-top: 28px; padding-top: 16px; border-top: 1.5px solid var(--line); display: flex; flex-wrap: wrap; gap: 8px 22px; align-items: center; color: var(--muted); font-size: .92rem; }
   .foot .btn { min-height: 40px; padding: 0 16px; font-size: .92rem; margin-left: auto; }

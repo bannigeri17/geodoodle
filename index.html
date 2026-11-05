@@ -37,8 +37,9 @@
     <div class="row" id="tools">
       <button type="button" class="btn" id="undo">Undo</button>
       <button type="button" class="btn" id="clear">Clear</button>
-      <button type="button" class="btn toggle" id="guide" aria-pressed="true">Guide box: on</button>
+      <button type="button" class="btn toggle" id="hardMode" aria-pressed="false">Hard mode: off</button>      
       <button type="button" class="btn primary" id="done">Score my drawing</button>
+      <p class="note">Hard mode hides the guide box and the touch-point hint. Choose before you start drawing.</p>
     </div>
 
     <div class="hints" id="hintsBox">
@@ -67,7 +68,11 @@
   <section class="summary" id="summary" hidden>
     <p class="ask" id="summaryLabel">Today's result</p>
     <div class="summary-total" id="summaryTotal">0<span class="of" style="font-size:1.3rem"> / 500</span></div>
-    <div id="summaryRows"></div>
+    <div class="summary-grid" id="summaryRows"></div>
+    <div class="legend">
+      <span><i style="background:var(--true)"></i>Actual outline</span>
+      <span><i style="background:var(--mine)"></i>Your drawing</span>
+    </div>
     <p class="note" id="summaryNote"></p>
     <div class="row">
       <button type="button" class="btn primary" id="share" style="margin-left:0">Share result</button>
